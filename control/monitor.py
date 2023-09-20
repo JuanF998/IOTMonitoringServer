@@ -106,7 +106,55 @@ def start_cron():
     '''
     print("Iniciando cron...")
     schedule.every(1).minutes.do(analyze_data)
+    schedule.every(1).minutes.do(analyze_data_challenge)
     print("Servicio de control iniciado")
     while 1:
         schedule.run_pending()
         time.sleep(1)
+
+def analyze_data_challenge():
+    # Consulta todos los datos de temperatura de los últimos cinco minutos.
+    # Compara el promedio con valor límite de 28,8 C    
+    # Si el promedio se excede el límite de temperatura, se envia un mensaje de alerta.
+
+    print("Calculando información...")
+
+    data = Data.objects.filter(
+        base_time__gte=datetime.now() - timedelta(minutes=5), measurement_id = 1)
+    aggregation = data.annotate(check_value=Avg('avg_value')) \
+        .select_related('station', 'measurement') \
+        .select_related('station__user', 'station__location') \
+        .select_related('station__location__city', 'station__location__state',
+                        'station__location__country') \
+        .values('check_value', 'station__user__username',
+                'measurement__name',
+                'measurement__max_value',
+                'measurement__min_value',
+                'station__location__city__name',
+                'station__location__state__name',
+                'station__location__country__name')
+    infos = 0
+    for item in aggregation:
+        info = False
+
+        variable = item["measurement__name"]
+        max_value = item["measurement__max_value"] or 0
+        min_value = item["measurement__min_value"] or 0
+
+        country = item['station__location__country__name']
+        state = item['station__location__state__name']
+        city = item['station__location__city__name']
+        user = item['station__user__username']
+
+        if item["check_value"] > max_value or item["check_value"] < min_value:
+            info = True
+
+        if info:
+            message = "INFO {} {}".format(variable, item["check_value"])
+            topic = '{}/{}/{}/{}/in'.format(country, state, city, user)
+            print(datetime.now(), "Sending info to {} {}".format(topic, variable))
+            client.publish(topic, message)
+            infos += 1
+
+    print(len(aggregation), "dispositivo revisado")
+    print(infos, "información enviada")
