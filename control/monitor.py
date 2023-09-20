@@ -114,8 +114,9 @@ def start_cron():
 
 def analyze_data_challenge():
     # Consulta todos los datos de temperatura de los últimos sesenta minutos.
-    # Compara el promedio con valor límite de 28 C    
-    # Si el promedio se excede el límite de temperatura, se envia un mensaje de alerta.
+    # Compara el promedio de valores minimos con límite inferior de 28 C    
+    # Si el promedio es mayor que el límite inferior de temperatura definido, se envia un mensaje información 
+    # que enciende un led que indica que la tempratura está por encima del minimo de 28 C.
 
     print("Calculando información...")
 
