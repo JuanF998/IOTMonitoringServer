@@ -113,13 +113,13 @@ def start_cron():
         time.sleep(1)
 
 def analyze_data_challenge():
-    # Consulta todos los datos de temperatura de los últimos seis minutos.
+    # Consulta todos los datos de temperatura de los últimos treinta minutos.
     # Compara el promedio con valor límite de 28 C    
     # Si el promedio se excede el límite de temperatura, se envia un mensaje de alerta.
 
     print("Calculando información...")
 
-    data = Data.objects.filter(measurement_id=1, base_time__gte=datetime.now() - timedelta(hours=0.1))
+    data = Data.objects.filter(measurement_id=1, base_time__gte=datetime.now() - timedelta(hours=0.5))
     aggregation = data.annotate(check_value=Avg('avg_value')) \
         .select_related('station', 'measurement') \
         .select_related('station__user', 'station__location') \
