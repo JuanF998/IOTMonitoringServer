@@ -146,7 +146,7 @@ def analyze_data_challenge():
         city = item['station__location__city__name']
         user = item['station__user__username']
 
-        if item["check_value"] > max_value or item["check_value"] < min_value:
+        if item["check_value"] > 28:
             info = True
 
         if info:
