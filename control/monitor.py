@@ -120,7 +120,7 @@ def analyze_data_challenge():
     print("Calculando información...")
 
     data = Data.objects.filter(
-        base_time__gte=datetime.now() - timedelta(minutes=5), measurement_id = 1)
+        base_time__gte=datetime.now() - timedelta(minutes=5))
     aggregation = data.annotate(check_value=Avg('avg_value')) \
         .select_related('station', 'measurement') \
         .select_related('station__user', 'station__location') \
@@ -138,9 +138,6 @@ def analyze_data_challenge():
         info = False
 
         variable = item["measurement__name"]
-        max_value = item["measurement__max_value"] or 0
-        min_value = item["measurement__min_value"] or 0
-
         country = item['station__location__country__name']
         state = item['station__location__state__name']
         city = item['station__location__city__name']
